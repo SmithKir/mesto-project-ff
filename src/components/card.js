@@ -22,8 +22,8 @@ export default function createCard(dataCard, deleteCard, likeCard, zoomCard) {
   return cardElement;
 }
 
-export function deleteCard(cards) {
-    cards.remove();
+export function deleteCard(card) {
+    card.remove();
   }
 
 export function likeCard(evt) {

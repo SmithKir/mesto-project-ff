@@ -5,10 +5,6 @@ import {deleteCard} from './components/card.js';
 import {likeCard} from './components/card.js';
 import {openPopup} from './components/modal.js';
 import {closePopup} from './components/modal.js';
-import {resetPopup}  from './components/modal.js';
-import {closeClickBackground} from './components/modal.js';
-import {closeKeyEscape} from './components/modal.js';
-import {closeKeyEscapeAdd} from './components/modal.js';
 
 const placesList = document.querySelector('.places__list');
 
@@ -34,37 +30,42 @@ const inputUrl = popupAddCard.querySelector('.popup__input_type_url');
 const imagePopupImg = popupImage.querySelector('.popup__image');
 const imagePopupCaption = popupImage.querySelector('.popup__caption');
 
+const popups= document.querySelectorAll('.popup');
 
-
+popups.forEach((element) => {
+  element.querySelector('.popup__close').addEventListener('click', () => {
+    closePopup(element);
+  });
+});
 
 function zoomCard(link, name) {
   imagePopupImg.src = link;
   imagePopupImg.alt = name;
   imagePopupCaption.textContent = name;
   openPopup(popupImage);
-  closeKeyEscape(popupImage);
-  closeClickBackground(popupImage);
 }
 
-initialCards.forEach( (dataCard) => {
+initialCards.forEach((dataCard) => {
   const addCard = createCard(dataCard, deleteCard, likeCard, zoomCard);
   placesList.append(addCard);
 })
 
 editButton.addEventListener('click', () => {
   openPopup(popupEdit);
-  closeClickBackground(popupEdit);
-  closeKeyEscapeAdd(popupAddCard);
   nameInputEdit.value = profileName.textContent;
   descriptionInputEdit.value = profileDescription.textContent;
-  
 })
 
 addButton.addEventListener('click', () => {
   openPopup(popupAddCard);
-  closeClickBackground(popupAddCard);
-  closeKeyEscapeAdd(popupAddCard);
+  resetPopup(popupAddCard)
 })
+
+function resetPopup(form) {
+  if (form.querySelector('.popup__form')) {
+    form.querySelector('.popup__form').reset();
+  }
+}
 
 function handleFormEditSubmit(evt) {
   evt.preventDefault();
@@ -85,5 +86,7 @@ function renderCard(dataCard) {
 
 formEdit.addEventListener('submit', handleFormEditSubmit);
 formAdd.addEventListener('submit', handleFormAddSubmit);
+
+
 
 
