@@ -36,7 +36,13 @@ popups.forEach((element) => {
   element.querySelector('.popup__close').addEventListener('click', () => {
     closePopup(element);
   });
-});
+
+  element.addEventListener('mousedown', (evt) => {
+    if (evt.target.classList.contains('popup')) {
+      closePopup(element);
+    }
+  });
+})
 
 function zoomCard(link, name) {
   imagePopupImg.src = link;
