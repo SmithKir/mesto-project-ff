@@ -1,3 +1,11 @@
+.like {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 35px;
+}
+
 .card__like-button {
   width: 21px;
   height: 18px;
@@ -17,4 +25,11 @@
 
 .card__like-button:hover {
   opacity: 0.6;
+}
+
+.likes-counter {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+
 }

@@ -15,10 +15,12 @@ module.exports = {
     mode: 'development',
   devServer: {
     static: path.resolve(__dirname, './dist'),
+    watchFiles: ['./src/index.html'],
+    open: true,
     compress: true,
     port: 8080,
-    open: true
   },
+  devtool: "source-map",
     module: {
     rules: [
       {
