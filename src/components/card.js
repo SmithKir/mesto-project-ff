@@ -1,9 +1,9 @@
 import {changeLikeCardStatus} from "./api";
 import { removeCard } from "./api";
 
-export function likeCard(cardID, likeButton, likesCounter) {
+export function likeCard(cardId, likeButton, likesCounter) {
   const isLiked = likeButton.classList.contains('card__like-button_is-active');
-  changeLikeCardStatus(cardID, !isLiked)
+  changeLikeCardStatus(cardId, !isLiked)
     .then((dataCard) => {
       likeButton.classList.toggle('card__like-button_is-active');
       likesCounter.textContent = dataCard.likes.length;
@@ -17,6 +17,9 @@ export function deleteCard(cardId, cardElement) {
   removeCard(cardId, cardElement) 
     .then(() => {
     cardElement.remove()
+    })
+    .catch((err) => {
+      console.log(`Не удалось удалить карточку: ${err}`);
     })
   }
 
@@ -34,9 +37,7 @@ export function createCard(dataCard, { onDeleteCard, onLikeIcon, onPreviewPictur
   cardImage.src = dataCard.link;
   cardImage.alt = dataCard.name;
 
-  const isLiked = dataCard.likes.some((like) => {
-    like._id === userId}
-  );
+  const isLiked = dataCard.likes.some((like) => like._id === userId);
   
   if (isLiked) 
     likeButton.classList.add('card__like-button_is-active');
@@ -54,6 +55,7 @@ export function createCard(dataCard, { onDeleteCard, onLikeIcon, onPreviewPictur
     likeButton.addEventListener('click', () => 
       onLikeIcon(dataCard._id, likeButton, likesCounter)
     );
+    
   }
 
   if (onPreviewPicture) {

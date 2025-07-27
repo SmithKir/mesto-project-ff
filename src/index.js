@@ -4,7 +4,6 @@ import {deleteCard} from './components/card.js';
 import {likeCard} from './components/card.js';
 import {openPopup} from './components/modal.js';
 import {closePopup} from './components/modal.js';
-import {validationConfig} from './components/validation.js';
 import {enableValidation} from './components/validation.js';
 import {clearValidation} from './components/validation.js';
 import {getInitialCards} from './components/api.js';
@@ -31,7 +30,7 @@ const formEditAvatar = popupEditAvatar.querySelector('.popup__form');
 const formEdit = popupEdit.querySelector('.popup__form');
 const formAdd = popupAddCard.querySelector('.popup__form');
 
-const avatarInputEdit = formEditAvatar.querySelector('.popup__input_type_avatar_url')
+const avatarInputEdit = formEditAvatar.querySelector('.popup__input_type_avatar_url');
 
 const nameInputEdit = formEdit.querySelector('.popup__input_type_name');
 const descriptionInputEdit = formEdit.querySelector('.popup__input_type_description');
@@ -48,9 +47,19 @@ const editAvatarSubmitButton = formEditAvatar.querySelector('.popup__button');
 const editSubmitButton = formEdit.querySelector('.popup__button');
 const addSubmitButton = formAdd.querySelector('.popup__button');
 
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__input-error_visible'
+};
+
+const defaultSubmitButtonText = 'Сохранить';
+const updateSubmitButtonText  = 'Сохранение...';
 
 let userId = null;
-
 
 popups.forEach((element) => {
   element.querySelector('.popup__close').addEventListener('click', () => {
@@ -71,11 +80,12 @@ function zoomCard(link, name) {
   openPopup(popupImage);
 }
 
+enableValidation(validationConfig);
+
 editAvatar.addEventListener('click', () => {
   openPopup(popupEditAvatar);
   resetPopup(popupEditAvatar);
   clearValidation(formEdit, validationConfig);
-  enableValidation(validationConfig);
 })
 
 editButton.addEventListener('click', () => {
@@ -83,14 +93,12 @@ editButton.addEventListener('click', () => {
   nameInputEdit.value = profileName.textContent;
   descriptionInputEdit.value = profileDescription.textContent;
   clearValidation(formEdit, validationConfig);
-  enableValidation(validationConfig);
 })
 
 addButton.addEventListener('click', () => {
   openPopup(popupAddCard);
   resetPopup(popupAddCard);
   clearValidation(formAdd, validationConfig);
-  enableValidation(validationConfig);
 })
 
 function resetPopup(form) {
@@ -99,74 +107,71 @@ function resetPopup(form) {
   }
 }
 
+const setLoadingState = (button, isLoading, buttonText, loadingText) => {
+  if (isLoading) {
+    button.textContent = loadingText;
+    button.disabled = true;
+  } else {
+    button.textContent = buttonText;
+    button.disabled = false;
+  }
+}
+
 function handleFormEditAvatarSubmit(evt) {
   evt.preventDefault();
 
-  const originalButtonText = editAvatarSubmitButton.textContent;
-  editAvatarSubmitButton.textContent = 'Сохранение...'; 
-  editAvatarSubmitButton.disabled = true;
+  setLoadingState(editAvatarSubmitButton, true, defaultSubmitButtonText, updateSubmitButtonText);
 
   setUserAvatar({avatar: avatarInputEdit.value}) 
     .then((res) => {
       editAvatar.style.backgroundImage = `url(${res.avatar})`;
+      setLoadingState(editAvatarSubmitButton, false, defaultSubmitButtonText, updateSubmitButtonText);
+      closePopup(popupEditAvatar);
     })
     .catch((err) => {
       console.log(`Не удалось обновить аватар: ${err}`);
-    })
-    .finally(() => {
-      editAvatarSubmitButton.textContent = originalButtonText;
-      editAvatarSubmitButton.disabled = false;
-      closePopup(popupEditAvatar);
     })
 };
 
 function handleFormEditSubmit(evt) {
   evt.preventDefault();
 
-  const originalButtonText = editSubmitButton.textContent;
-  editSubmitButton.textContent = 'Сохранение...'; 
-  editSubmitButton.disabled = true;
+  setLoadingState(editSubmitButton, true, defaultSubmitButtonText, updateSubmitButtonText);
 
   setUserInfo({name: nameInputEdit.value, about: descriptionInputEdit.value})
     .then((res) => {
       profileName.textContent = res.name;  
       profileDescription.textContent = res.about;
-      
+      setLoadingState(editSubmitButton, false, defaultSubmitButtonText, updateSubmitButtonText);
+      closePopup(popupEdit);
     })
     .catch((err) => {
       console.log(`Не удалось обновить данные профиля: ${err}`);
-    })
-    .finally(() => {
-      editSubmitButton.textContent = originalButtonText;
-      editSubmitButton.disabled = false;
-      closePopup(popupEdit);
     }) 
 };
 
 function handleFormAddSubmit(evt) {
   evt.preventDefault();
 
-  const originalButtonText = addSubmitButton.textContent;
-  addSubmitButton.textContent = 'Сохранение...'; 
-  addSubmitButton.disabled = true;
+  setLoadingState(addSubmitButton, true, defaultSubmitButtonText, updateSubmitButtonText);
 
   renderCard({name: inputPlace.value, link: inputUrl.value})
-    .then((res) => {
-      const newCard = {
-        name: res.name,
-        link: res.link
-      }
-      const newCardElement = createCard(newCard, deleteCard, likeCard, zoomCard)
-      placesList.prepend(newCardElement)
-      
+    .then((dataCard) => {
+      const addCard = createCard(
+        dataCard, 
+        {
+          onDeleteCard: deleteCard,
+          onLikeIcon: likeCard, 
+          onPreviewPicture: zoomCard,
+        }, 
+        userId
+      );
+      setLoadingState(addSubmitButton, false, defaultSubmitButtonText, updateSubmitButtonText);
+      placesList.prepend(addCard);
+      closePopup(popupAddCard);
     })
     .catch((err) => {
       console.log(`Не удалось создать новую карточку: ${err}`);
-    })
-    .finally(() => {
-      addSubmitButton.textContent = originalButtonText;
-      addSubmitButton.disabled = false;
-      closePopup(popupAddCard);
     })
 };
 
@@ -180,9 +185,9 @@ Promise.all([getInitialCards(), getUserInfo()])
     profileName.textContent = user.name;
     profileDescription.textContent = user.about;
     editAvatar.style.backgroundImage = `url(${user.avatar})`;
-
+    formAdd.addEventListener('submit', handleFormAddSubmit);
     cards.forEach((dataCard) => {
-      const addCard = createCard(
+      const addCards = createCard(
         dataCard, 
         {
           onDeleteCard: deleteCard,
@@ -190,8 +195,10 @@ Promise.all([getInitialCards(), getUserInfo()])
           onPreviewPicture: zoomCard,
         }, 
         userId
+        
       );
-      placesList.append(addCard)
+      placesList.append(addCards);
+      
     });
   })
   .catch((err) => {

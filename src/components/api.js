@@ -25,7 +25,7 @@ export const renderCard = ({name, link}) => {
     headers: config.headers,
     body: JSON.stringify({
       name,
-      link
+      link,
     })
   })
   .then(getResponseData)
