@@ -80,12 +80,12 @@ function zoomCard(link, name) {
   openPopup(popupImage);
 }
 
-enableValidation(validationConfig);
+ enableValidation(validationConfig);
 
 editAvatar.addEventListener('click', () => {
   openPopup(popupEditAvatar);
   resetPopup(popupEditAvatar);
-  clearValidation(formEdit, validationConfig);
+  clearValidation(formEditAvatar, validationConfig);
 })
 
 editButton.addEventListener('click', () => {
@@ -125,11 +125,13 @@ function handleFormEditAvatarSubmit(evt) {
   setUserAvatar({avatar: avatarInputEdit.value}) 
     .then((res) => {
       editAvatar.style.backgroundImage = `url(${res.avatar})`;
-      setLoadingState(editAvatarSubmitButton, false, defaultSubmitButtonText, updateSubmitButtonText);
       closePopup(popupEditAvatar);
     })
     .catch((err) => {
       console.log(`Не удалось обновить аватар: ${err}`);
+    })
+    .finally(() => {
+      setLoadingState(editAvatarSubmitButton, false, defaultSubmitButtonText, updateSubmitButtonText);
     })
 };
 
@@ -142,12 +144,14 @@ function handleFormEditSubmit(evt) {
     .then((res) => {
       profileName.textContent = res.name;  
       profileDescription.textContent = res.about;
-      setLoadingState(editSubmitButton, false, defaultSubmitButtonText, updateSubmitButtonText);
       closePopup(popupEdit);
     })
     .catch((err) => {
       console.log(`Не удалось обновить данные профиля: ${err}`);
     }) 
+    .finally(() => {
+      setLoadingState(editSubmitButton, false, defaultSubmitButtonText, updateSubmitButtonText);
+    })
 };
 
 function handleFormAddSubmit(evt) {
@@ -166,12 +170,14 @@ function handleFormAddSubmit(evt) {
         }, 
         userId
       );
-      setLoadingState(addSubmitButton, false, defaultSubmitButtonText, updateSubmitButtonText);
       placesList.prepend(addCard);
       closePopup(popupAddCard);
     })
     .catch((err) => {
       console.log(`Не удалось создать новую карточку: ${err}`);
+    })
+    .finally(() => {
+      setLoadingState(addSubmitButton, false, defaultSubmitButtonText, updateSubmitButtonText);
     })
 };
 
@@ -185,7 +191,6 @@ Promise.all([getInitialCards(), getUserInfo()])
     profileName.textContent = user.name;
     profileDescription.textContent = user.about;
     editAvatar.style.backgroundImage = `url(${user.avatar})`;
-    formAdd.addEventListener('submit', handleFormAddSubmit);
     cards.forEach((dataCard) => {
       const addCards = createCard(
         dataCard, 
@@ -206,5 +211,5 @@ Promise.all([getInitialCards(), getUserInfo()])
   })
 
 
-  
+ 
  
